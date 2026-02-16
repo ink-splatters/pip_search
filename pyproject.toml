@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pip_search"
+version="0.0.14"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+readme = "README.md"
+authors = [
+    { name = "Victor Garric", email="victor.garric@gmail.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "bs4>=0.0.2",
+    "requests>=2.32.5",
+    "rich>=14.3.2",
+]
+
+[project.scripts]
+pip_search = "pip_search.__main__:main"
