@@ -3,7 +3,9 @@
 __Wrapping the needs of a "pip search" command necessity through PyPi.org__
 
 ## Installation & Usage
-Install with `pip install pip_search`
+Install with: `uv tool install pip_search` (recommended).
+
+Alternatively: `pip install pip_search`
 
 Use with `pip_search anything`
 
