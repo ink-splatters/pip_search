@@ -12,16 +12,26 @@ from .tracing import Redactor, body_preview
 _SENSITIVE_HEADERS: Final[frozenset[str]] = frozenset({"authorization", "cookie"})
 
 
-class HTTPClient(httpx.Client):
+class Client(httpx.Client):
     """HTTPX client with request/response logging."""
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         self._redactor = Redactor(_SENSITIVE_HEADERS)
+        event_hooks = kwargs.pop("event_hooks", {})
+        if not isinstance(event_hooks, dict):
+            event_hooks = {}
+
+        request_hooks = list(event_hooks.get("request", []))
+        response_hooks = list(event_hooks.get("response", []))
+        request_hooks.append(self._log_request)
+        response_hooks.append(self._log_response)
+
         super().__init__(
             event_hooks={
-                "request": [self._log_request],
-                "response": [self._log_response],
-            }
+                "request": request_hooks,
+                "response": response_hooks,
+            },
+            **kwargs,
         )
 
     def build_request(

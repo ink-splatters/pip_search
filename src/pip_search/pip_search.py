@@ -15,7 +15,8 @@ if TYPE_CHECKING:
 from bs4 import BeautifulSoup
 from loguru import logger
 
-from .http_client import HTTPClient
+from . import http
+from .internal.challenge_solvers import FastlyChallengeSolver
 
 
 class SortBy(StrEnum):
@@ -85,7 +86,7 @@ def _parse_iso_datetime(value: str) -> datetime:
 
 def _make_client(cfg: SearchConfig) -> httpx.Client:
     """Create HTTPX client with default headers and HTTP/2."""
-    return HTTPClient(
+    return http.Client(
         http2=True,
         headers=_DEFAULT_HEADERS,
         timeout=httpx.Timeout(cfg.timeout_s),
@@ -122,6 +123,8 @@ def search(
 ) -> Iterator[Package]:
     o = _coerce_opts(opts)
     c = client or _make_client(config)
+    challenge_solver = FastlyChallengeSolver(c, base_url=config.base_url)
+    challenge_solver.ensure_access(config.search_url, referer=config.search_url)
 
     logger.info("Searching PyPI: query={!r} pages={}", query, o.pages)
 
