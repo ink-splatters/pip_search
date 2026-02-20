@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+import asyncio
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 import httpx
 
@@ -32,6 +33,10 @@ class SearchConfig:
     default_sort: SortBy = SortBy.NAME
     project_url_template: str = "https://pypi.org/project/{name}/"
     timeout_s: float = 30.0
+    max_connections: int = 120
+    max_keepalive_connections: int = 60
+    keepalive_expiry_s: float = 30.0
+    version_fetch_concurrency: int = 60
 
 
 CONFIG = SearchConfig()
@@ -61,7 +66,6 @@ class _Sel:
     VERSION = 'span[class*="package-snippet__version"]'
     CREATED = 'span[class*="package-snippet__created"] time'
     DESCRIPTION = 'p[class*="package-snippet__description"]'
-    PROJECT_VERSION = "h1.package-header__name"
 
 
 _DEFAULT_HEADERS: dict[str, str] = {
@@ -90,6 +94,11 @@ def _make_client(cfg: SearchConfig) -> httpx.Client:
         http2=True,
         headers=_DEFAULT_HEADERS,
         timeout=httpx.Timeout(cfg.timeout_s),
+        limits=httpx.Limits(
+            max_connections=max(1, cfg.max_connections),
+            max_keepalive_connections=max(1, cfg.max_keepalive_connections),
+            keepalive_expiry=cfg.keepalive_expiry_s,
+        ),
     )
 
 
@@ -103,15 +112,111 @@ def _coerce_opts(opts: SearchOptions | dict | None) -> SearchOptions:
     return SearchOptions(sort_by=SortBy(str(sort_by)), pages=int(pages))
 
 
-def _fetch_project_version(client: httpx.Client, url: str, *, timeout_s: float) -> str:
-    resp = client.get(url)
-    soup = BeautifulSoup(resp.text, "html.parser")
-    h1 = soup.select_one(_Sel.PROJECT_VERSION)
-    if not h1:
-        return "Unknown"
-    text = re.sub(r"\s+", " ", h1.get_text(strip=True))
-    parts = text.split()
-    return parts[-1] if parts else "Unknown"
+async def _fetch_project_version(
+    client: httpx.AsyncClient,
+    *,
+    base_url: str,
+    package_name: str,
+) -> tuple[str, str]:
+    endpoint = f"{base_url.rstrip('/')}/pypi/{quote(package_name, safe='')}/json"
+
+    try:
+        resp = await client.get(endpoint)
+    except httpx.HTTPError as exc:
+        logger.debug("Failed to fetch version for {}: {}", package_name, exc)
+        return package_name, "Unknown"
+
+    if resp.status_code != 200:
+        logger.debug("Failed to fetch version for {}: HTTP {}", package_name, resp.status_code)
+        return package_name, "Unknown"
+
+    try:
+        data = resp.json()
+    except ValueError:
+        logger.debug("Version response is not JSON for {}", package_name)
+        return package_name, "Unknown"
+
+    if not isinstance(data, dict):
+        return package_name, "Unknown"
+
+    info = data.get("info")
+    if not isinstance(info, dict):
+        return package_name, "Unknown"
+
+    version = info.get("version")
+    if isinstance(version, str) and version:
+        return package_name, version
+
+    return package_name, "Unknown"
+
+
+async def _resolve_missing_versions_async(
+    package_names: tuple[str, ...],
+    *,
+    config: SearchConfig,
+) -> dict[str, str]:
+    concurrency = max(1, min(config.version_fetch_concurrency, len(package_names)))
+    sem = asyncio.Semaphore(concurrency)
+
+    async with httpx.AsyncClient(
+        http2=True,
+        headers=_DEFAULT_HEADERS,
+        timeout=httpx.Timeout(config.timeout_s),
+        limits=httpx.Limits(
+            max_connections=max(1, config.max_connections),
+            max_keepalive_connections=max(1, config.max_keepalive_connections),
+            keepalive_expiry=config.keepalive_expiry_s,
+        ),
+    ) as client:
+
+        async def _task(name: str) -> tuple[str, str]:
+            async with sem:
+                return await _fetch_project_version(
+                    client, base_url=config.base_url, package_name=name
+                )
+
+        resolved = await asyncio.gather(*(_task(name) for name in package_names))
+
+    return dict(resolved)
+
+
+def _resolve_missing_versions(
+    package_names: list[str],
+    *,
+    config: SearchConfig,
+) -> dict[str, str]:
+    unique_names = tuple(dict.fromkeys(package_names))
+    if not unique_names:
+        return {}
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(_resolve_missing_versions_async(unique_names, config=config))
+
+    logger.debug("Event loop already running; falling back to sequential version fetch")
+    results: dict[str, str] = {}
+    with httpx.Client(
+        http2=True,
+        headers=_DEFAULT_HEADERS,
+        timeout=httpx.Timeout(config.timeout_s),
+    ) as client:
+        for name in unique_names:
+            resp = client.get(f"{config.base_url.rstrip('/')}/pypi/{quote(name, safe='')}/json")
+            if resp.status_code != 200:
+                results[name] = "Unknown"
+                continue
+            try:
+                payload = resp.json()
+            except ValueError:
+                results[name] = "Unknown"
+                continue
+
+            info = payload.get("info") if isinstance(payload, dict) else None
+            version = info.get("version") if isinstance(info, dict) else None
+            results[name] = version if isinstance(version, str) and version else "Unknown"
+
+    return results
 
 
 def search(
@@ -126,9 +231,10 @@ def search(
     challenge_solver = FastlyChallengeSolver(c, base_url=config.base_url)
     challenge_solver.ensure_access(config.search_url, referer=config.search_url)
 
-    logger.info("Searching PyPI: query={!r} pages={}", query, o.pages)
+    logger.debug("Searching PyPI: query={!r} pages={}", query, o.pages)
 
     packages: list[Package] = []
+    missing_version_entries: list[tuple[int, str]] = []
     for page in range(1, o.pages + 1):
         resp = c.get(config.search_url, params={"q": query, "page": page})
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -164,17 +270,25 @@ def search(
             desc_el = snip.select_one(_Sel.DESCRIPTION)
             description = re.sub(r"\s+", " ", desc_el.get_text(strip=True)) if desc_el else ""
 
+            package = Package(
+                name=name,
+                version=version,
+                released_at=released_at,
+                description=description,
+                url=url,
+            )
+            packages.append(package)
             if not version:
-                version = _fetch_project_version(c, url, timeout_s=config.timeout_s)
+                missing_version_entries.append((len(packages) - 1, name))
 
-            packages.append(
-                Package(
-                    name=name,
-                    version=version,
-                    released_at=released_at,
-                    description=description,
-                    url=url,
-                )
+    if missing_version_entries:
+        versions = _resolve_missing_versions(
+            [name for _, name in missing_version_entries],
+            config=config,
+        )
+        for index, package_name in missing_version_entries:
+            packages[index] = replace(
+                packages[index], version=versions.get(package_name, "Unknown")
             )
 
     match o.sort_by:

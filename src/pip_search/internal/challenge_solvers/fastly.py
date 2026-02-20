@@ -46,7 +46,7 @@ class FastlyChallengeSolver:
         """Ensure the client can access endpoint by solving Fastly challenge if needed."""
         referer_url = referer or trigger_url
 
-        logger.info("Fastly: probing access: {}", trigger_url)
+        logger.debug("Fastly: probing access: {}", trigger_url)
         probe_response = self._client.get(trigger_url)
         probe_body = probe_response.text
 
@@ -54,7 +54,7 @@ class FastlyChallengeSolver:
             raise FastlyChallengeError(f"Challenge probe failed: HTTP {probe_response.status_code}")
 
         if not has_challenge(probe_body):
-            logger.info("Fastly: no challenge detected")
+            logger.debug("Fastly: no challenge detected")
             return True
 
         script_url = extract_script_url(probe_body, base_url=self._base_url)
@@ -77,7 +77,7 @@ class FastlyChallengeSolver:
 
     def _solve_challenge_chain(self, config: ChallengeConfig, *, referer_url: str) -> bool:
         """Solve challenge chain using round-based post-back flow."""
-        logger.info("Fastly: solving challenge chain")
+        logger.debug("Fastly: solving challenge chain")
 
         token = config.token
         challenges = config.challenges
@@ -86,7 +86,7 @@ class FastlyChallengeSolver:
             context = ChallengeContext(token=token, path=config.path, referer_url=referer_url)
             responses = self._response_builder.build(challenges, context=context)
 
-            logger.info(
+            logger.debug(
                 "Fastly: post-back round={} responses={}",
                 round_idx,
                 [response.get("ty") for response in responses],
@@ -94,7 +94,7 @@ class FastlyChallengeSolver:
 
             result = self._post_back(context=context, responses=responses)
             status = str(result.get("status", ""))
-            logger.info("Fastly: post-back status={}", status)
+            logger.debug("Fastly: post-back status={}", status)
 
             if status == "success":
                 return True

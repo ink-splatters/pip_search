@@ -79,7 +79,7 @@ class PoWChallengeProvider:
 
     def solve_suffix(self, challenge: PoWChallenge) -> str:
         """Find suffix that satisfies PoW target hash."""
-        logger.info(
+        logger.debug(
             "Fastly: solving PoW: base_len={} suffix_len={} target_prefix={}",
             len(challenge.base),
             challenge.suffix_len,

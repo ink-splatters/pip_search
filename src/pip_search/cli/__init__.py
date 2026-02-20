@@ -20,7 +20,7 @@ from ..utils import check_version
 
 def _setup_logger(*, debug: bool) -> None:
     logger.remove()
-    logger.add(sys.stderr, level="DEBUG" if debug else "INFO")
+    logger.add(sys.stderr, level="DEBUG" if debug else "WARNING")
     if debug:
         http.client.HTTPConnection.debuglevel = 1
 

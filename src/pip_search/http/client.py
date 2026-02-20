@@ -60,7 +60,7 @@ class Client(httpx.Client):
         req = response.request
         body = self._safe_response_body(response)
 
-        logger.info("HTTP {} {} -> {}", req.method, req.url, response.status_code)
+        logger.debug("HTTP {} {} -> {}", req.method, req.url, response.status_code)
         logger.debug(
             "HTTP response: url={} status={} headers={} body_len={}",
             req.url,

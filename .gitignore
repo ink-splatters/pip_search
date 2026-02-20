@@ -153,3 +153,4 @@ cython_debug/
 /.python-version
 /uv.lock
 .DS_Store
+src/pip_search/_version.py

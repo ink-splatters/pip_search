@@ -53,7 +53,7 @@ __version__ = "{version}"
 
 [tool.poe.tasks]
 vulture = "vulture src tests"
-typecheck = "ty check"
+typecheck = "ty check src tests"
 lint = ["ruff:check", "typecheck"]
 fix = ["ruff:format", "ruff:fix", "typecheck"]
 test = "pytest -v --cov=pip_search --cov-report=term-missing"
