@@ -66,12 +66,14 @@ uv run poe test
 - 0.1.0
 
   - Migrate packaging/build to `pyproject.toml` + Hatch, define `project.scripts`, and align dev workflows with `uv` + Poe tasks (`lint`, `typecheck`, `test`).
-  - Replace legacy flat module layout with a structured package split: `cli/`, `http/`, `internal/`, and typed domain models (`dataclass`, `StrEnum`, protocols).
+  - Move from a legacy flat module layout to a structured package split: `cli/`, `http/`, `internal/`, and typed domain models (`dataclass`, `StrEnum`, protocols).
   - Fix passing through CAPTCHA: add a new Fastly challenge solver orchestration flow:
     - `FastlyChallengeSolver` handles probe -> script fetch -> parse -> round-based post-back.
     - Pluggable providers for PAT, PoW, and client metrics.
     - Robust parser/error taxonomy and explicit unsolvable handling (e.g., CAPTCHA).
   - Improve HTTP layer via a custom `httpx.Client` wrapper with request/response tracing and sensitive-header redaction.
+  - Add Loguru-based `--log-level` control (default `WARNING`; levels: `TRACE`, `DEBUG`, `INFO`, `SUCCESS`, `WARNING`, `ERROR`, `CRITICAL`).
+  - Scope verbose HTTP request/response tracing to `TRACE`; keep `DEBUG` focused on internal solver/search diagnostics.
   - Refactor search pipeline for clearer config/options handling, stronger typing, and concurrent missing-version resolution.
   - Expand tests significantly around challenge parsing/solving, providers, response builder, tracing, and search behavior.
 

@@ -17,12 +17,22 @@ from .. import __version__
 from ..pip_search import CONFIG, SearchOptions, SortBy, search
 from ..utils import check_version
 
+_LOGURU_LEVELS: tuple[str, ...] = (
+    "TRACE",
+    "DEBUG",
+    "INFO",
+    "SUCCESS",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+)
 
-def _setup_logger(*, debug: bool) -> None:
+
+def _setup_logger(*, log_level: str) -> None:
     logger.remove()
-    logger.add(sys.stderr, level="DEBUG" if debug else "WARNING")
-    if debug:
-        http.client.HTTPConnection.debuglevel = 1
+    normalized_level = log_level.upper()
+    logger.add(sys.stderr, level=normalized_level)
+    http.client.HTTPConnection.debuglevel = 1 if normalized_level == "TRACE" else 0
 
 
 def cli(argv: Sequence[str] | None = None) -> None:
@@ -39,11 +49,17 @@ def cli(argv: Sequence[str] | None = None) -> None:
         "--pages", type=int, default=CONFIG.pages, help="Number of result pages to fetch"
     )
     ap.add_argument("--date-format", default="%Y-%m-%d", help="strftime format for release date")
-    ap.add_argument("--debug", action="store_true", help="Enable debug logging")
+    ap.add_argument(
+        "--log-level",
+        type=str.upper,
+        default="WARNING",
+        choices=_LOGURU_LEVELS,
+        help="Loguru logging level",
+    )
     ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     args = ap.parse_args(list(argv) if argv is not None else None)
-    _setup_logger(debug=bool(args.debug))
+    _setup_logger(log_level=str(args.log_level))
 
     query = " ".join(args.query).strip()
     opts = SearchOptions(

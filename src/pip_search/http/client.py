@@ -48,7 +48,7 @@ class Client(httpx.Client):
         return super().build_request(method.upper(), url, **kwargs)
 
     def _log_request(self, request: httpx.Request) -> None:
-        logger.debug(
+        logger.trace(
             "HTTP request: method={} url={} headers={} body={}",
             request.method,
             request.url,
@@ -60,8 +60,8 @@ class Client(httpx.Client):
         req = response.request
         body = self._safe_response_body(response)
 
-        logger.debug("HTTP {} {} -> {}", req.method, req.url, response.status_code)
-        logger.debug(
+        logger.trace("HTTP {} {} -> {}", req.method, req.url, response.status_code)
+        logger.trace(
             "HTTP response: url={} status={} headers={} body_len={}",
             req.url,
             response.status_code,
@@ -70,7 +70,7 @@ class Client(httpx.Client):
         )
 
         if not response.is_redirect:
-            logger.opt(lazy=True).debug(
+            logger.opt(lazy=True).trace(
                 "HTTP response body preview: {}",
                 lambda content=body: body_preview(content),
             )
