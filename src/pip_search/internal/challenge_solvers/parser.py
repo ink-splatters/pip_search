@@ -7,7 +7,7 @@ import json
 from typing import Any
 
 from .errors import FastlyChallengeParseError
-from .types import ChallengeConfig
+from .types import ChallengeConfig, ChallengeData
 
 CHALLENGE_MARKER = "_fs-ch-"
 
@@ -42,15 +42,31 @@ def parse_challenge_script(script: str) -> ChallengeConfig:
     path = init_match.group(3)
 
     try:
-        parsed: Any = json.loads(array_str)
+        parsed = json.loads(array_str)
     except json.JSONDecodeError as exc:
         raise FastlyChallengeParseError(f"Challenge JSON parse failed: {exc}") from exc
 
-    if not isinstance(parsed, list):
+    challenges = validate_challenges(parsed)
+    return ChallengeConfig(challenges=challenges, token=token, path=path)
+
+
+def validate_challenges(payload: object) -> list[ChallengeData]:
+    """Validate raw challenge payloads and return typed challenge objects."""
+    if not isinstance(payload, list):
         raise FastlyChallengeParseError("Challenge JSON was not a list")
 
-    if any(not isinstance(item, dict) for item in parsed):
+    return [_validate_challenge(item) for item in payload]
+
+
+def _validate_challenge(payload: object) -> ChallengeData:
+    """Validate one raw challenge object and return a typed mapping."""
+    if not isinstance(payload, dict):
         raise FastlyChallengeParseError("Challenge list contained non-object entries")
 
-    challenges = list(parsed)
-    return ChallengeConfig(challenges=challenges, token=token, path=path)
+    challenge: dict[str, Any] = {}
+    for key, value in payload.items():
+        if not isinstance(key, str):
+            raise FastlyChallengeParseError("Challenge list contained non-object entries")
+        challenge[key] = value
+
+    return challenge

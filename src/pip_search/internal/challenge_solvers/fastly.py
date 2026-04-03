@@ -16,6 +16,7 @@ from .response_builder import ChallengeResponseBuilder
 from .types import (
     ChallengeConfig,
     ChallengeContext,
+    ChallengeData,
     ChallengeResponse,
     ChallengeRoundHandler,
 )
@@ -101,8 +102,9 @@ class FastlyChallengeSolver:
 
             next_challenges = result.get("ch")
             next_token = result.get("tok")
-            if isinstance(next_challenges, list) and isinstance(next_token, str) and next_token:
-                challenges = [item for item in next_challenges if isinstance(item, dict)]
+            typed_challenges = _extract_next_round_challenges(next_challenges)
+            if typed_challenges is not None and isinstance(next_token, str) and next_token:
+                challenges = typed_challenges
                 token = next_token
                 continue
 
@@ -142,3 +144,24 @@ class FastlyChallengeSolver:
             raise FastlyChallengeParseError("Invalid JSON from post-back: expected object")
 
         return dict(data)
+
+
+def _extract_next_round_challenges(payload: object) -> list[ChallengeData] | None:
+    """Extract valid challenge objects from a Fastly post-back response."""
+    if not isinstance(payload, list):
+        return None
+
+    challenges: list[ChallengeData] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+
+        challenge: dict[str, Any] = {}
+        for key, value in item.items():
+            if not isinstance(key, str):
+                break
+            challenge[key] = value
+        else:
+            challenges.append(challenge)
+
+    return challenges
