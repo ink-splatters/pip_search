@@ -2,6 +2,8 @@
 
 __Wrapping the needs of a "pip search" command necessity through PyPi.org__
 
+__2026 edition__
+
 ## Installation & Usage
 
 Install with: `uv tool install pip_search`
