@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Sync dependencies
+        run: uv sync --all-extras
+
+      - name: Run fix
+        run: uv run poe fix
+
+      - name: Run tests
+        run: uv run poe test
