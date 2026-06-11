@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from typing import Any, ClassVar, Protocol
+
 from loguru import logger
 
-from .errors import FastlyChallengeUnsolvable
+from .errors import FastlyChallengeError, FastlyChallengeNotSupportedError
 from .types import (
     ChallengeContext,
     ChallengeData,
@@ -14,6 +16,19 @@ from .types import (
     PATProvider,
     PoWProvider,
 )
+
+
+class Dataclass(Protocol):
+    # as already noted in comments, checking for this attribute is currently
+    # the most reliable way to ascertain that something is a dataclass
+    __dataclass_fields__: ClassVar[dict[str, Any]]
+
+
+
+def extra_info(extra: Dataclass) -> str | None:
+    import json
+    import dataclasses
+    return json.dumps(dataclasses.asdict(extra)) if logger._core.min_level <=5 else ""
 
 
 class ChallengeResponseBuilder:
@@ -32,11 +47,12 @@ class ChallengeResponseBuilder:
 
     def build(
         self,
-        challenges: list[ChallengeData],
+        config: dict[str,Any],
         *,
         context: ChallengeContext,
     ) -> list[ChallengeResponse]:
         """Build response payload list for a Fastly challenge round."""
+        challenges: list[ChallengeData] = config.challenges
         responses: list[ChallengeResponse] = []
 
         for challenge in challenges:
@@ -53,9 +69,14 @@ class ChallengeResponseBuilder:
                     responses.append(self._metrics_provider.solve())
 
                 case ChallengeType.CAPTCHA:
-                    raise FastlyChallengeUnsolvable("CAPTCHA challenge cannot be solved")
+                    raise FastlyChallengeNotSupportedError("; ".join([
+                        "CAPTCHA challenge is unsupported",
+                        extra_info(extra=config)]))
+
 
                 case _:
-                    logger.debug("Fastly: ignoring unknown challenge type: {}", challenge_type)
+                    raise FastlyChallengeError("; ".join([
+                        f"unknown challenge type: {challenge_type}",
+                        extra_info(extra=config)]))
 
         return responses

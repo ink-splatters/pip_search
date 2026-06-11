@@ -7,7 +7,7 @@ import pytest
 from pip_search.internal.challenge_solvers import (
     FastlyChallengeError,
     FastlyChallengeParseError,
-    FastlyChallengeUnsolvable,
+    FastlyChallengeValueError,
     PoWChallenge,
     PoWChallengeProvider,
 )
@@ -66,7 +66,7 @@ def test_pow_parse_raises_for_missing_field() -> None:
 def test_pow_parse_raises_for_large_suffix() -> None:
     provider = PoWChallengeProvider()
 
-    with pytest.raises(FastlyChallengeUnsolvable, match="suffix length too large"):
+    with pytest.raises(FastlyChallengeValueError, match="suffix length too large"):
         provider.parse(
             {
                 "base": "x",

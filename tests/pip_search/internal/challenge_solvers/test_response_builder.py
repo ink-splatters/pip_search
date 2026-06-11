@@ -7,7 +7,7 @@ import pytest
 from pip_search.internal.challenge_solvers import (
     ChallengeContext,
     ChallengeResponseBuilder,
-    FastlyChallengeUnsolvable,
+    FastlyChallengeNotSupportedError,
 )
 
 if TYPE_CHECKING:
@@ -72,7 +72,7 @@ def test_response_builder_raises_for_captcha() -> None:
         metrics_provider=StubMetricsProvider(),
     )
 
-    with pytest.raises(FastlyChallengeUnsolvable, match="CAPTCHA"):
+    with pytest.raises(FastlyChallengeNotSupportedError, match="CAPTCHA"):
         builder.build(
             [{"ty": "captcha"}],
             context=ChallengeContext(

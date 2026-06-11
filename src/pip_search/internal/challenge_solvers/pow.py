@@ -10,7 +10,7 @@ from typing import Any
 
 from loguru import logger
 
-from .errors import FastlyChallengeError, FastlyChallengeParseError, FastlyChallengeUnsolvable
+from .errors import FastlyChallengeError, FastlyChallengeParseError, FastlyChallengeValueError
 from .types import ChallengeData, ChallengeResponse, ChallengeType
 
 
@@ -67,7 +67,7 @@ class PoWChallengeProvider:
                 break
 
         if suffix_len > 4:
-            raise FastlyChallengeUnsolvable(f"PoW suffix length too large: {suffix_len}")
+            raise FastlyChallengeValueError(f"PoW suffix length too large: {suffix_len}")
 
         return PoWChallenge(
             base=as_str("base"),

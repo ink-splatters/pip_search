@@ -81,11 +81,10 @@ class FastlyChallengeSolver:
         logger.debug("Fastly: solving challenge chain")
 
         token = config.token
-        challenges = config.challenges
 
         for round_idx in range(1, 6):
             context = ChallengeContext(token=token, path=config.path, referer_url=referer_url)
-            responses = self._response_builder.build(challenges, context=context)
+            responses = self._response_builder.build(config, context=context)
 
             logger.debug(
                 "Fastly: post-back round={} responses={}",
