@@ -18,16 +18,14 @@ exclude = [
 ]
 
 [lint]
-# Comprehensive rule selection combining modernization + code quality
 select = [
-  # Core Python modernization (our priority)
-  "UP",     # pyupgrade - modernize Python code for target version
-  "FA",     # flake8-future-annotations - add future annotations import
   "ANN204", # flake8-annotations - require return type for __init__
-  "TCH",    # flake8-type-checking - move imports under TYPE_CHECKING
+  "FA",     # flake8-future-annotations - add future annotations import
   "PYI",    # flake8-pyi - type stub files best practices
+  "TCH",    # flake8-type-checking - move imports under TYPE_CHECKING
+  "UP",     # pyupgrade - modernize Python code for target version
 
-  # Code quality from upgrade/pyproject.toml
+
   "E",   # pycodestyle errors
   "W",   # pycodestyle warnings  
   "F",   # pyflakes
@@ -40,32 +38,30 @@ select = [
   "PT",  # flake8-pytest-style
   "PIE", # flake8-pie
   "COM", # flake8-commas
+  "S",   # flake8-bandid,
+  "PL",  # pylint,
+  "TRY", # tryceratops,
+  "FIX", # flake8-fixme
 ]
 
-# Specific modernization rules to enforce
 extend-select = [
-  # Python 3.10+ type hint modernization
-  "UP006", # Use `list` instead of `List` for type annotations
-  "UP007", # Use `X | Y` for union types instead of `Optional`
-  "UP035", # Import from collections.abc instead of typing
-  "UP037", # Remove quotes from annotations when possible
-  "UP040", # Type alias with TypeAlias annotation
+  "BLE001", # do not catch blind exception
+  "UP006",  # use `list` instead of `List` for type annotations
+  "UP007",  # use `X | Y` for union types instead of `Optional`
+  "UP035",  # import from collections.abc instead of typing
+  "UP037",  # remove quotes from annotations when possible
+  "UP040",  # type alias with TypeAlias annotation
 
-  # Future annotations
-  "FA100", # Add `from __future__ import annotations` when needed
-  "FA102", # Add `from __future__ import annotations` for PEP 604 unions
+  "FA100",  # add `from __future__ import annotations` when needed
+  "FA102",  # add `from __future__ import annotations` for PEP 604 unions
 ]
 
 ignore = [
-  # From upgrade/pyproject.toml (preserve these)
-  "E501",   # line too long (handled by formatter)
-  "B008",   # do not perform function calls in argument defaults
-  "N818",   # exception name should be named with an Error suffix
-  "COM812", # trailing comma missing (handled by formatter)
-
-  # Avoid conflicts with modernization goals
-  "T201", # print found (keep prints for now)
-  "T20",  # Remove T20 from select since we're ignoring T201
+  "E501",    # line too long (handled by formatter)
+  "N818",    # exception name should be named with an Error suffix
+  "COM812",  # trailing comma missing (handled by formatter)
+  "PLR2004", # magic value used in comparison
+  "TRY300"   # consider moving this statement to an else block - triggers false positives
 ]
 
 # Allow automatic fixes including unsafe ones
@@ -73,8 +69,8 @@ unfixable = []
 
 # Per-file ignores
 [lint.per-file-ignores]
-"test_*.py" = ["T201"] # Allow print in tests
-"*_test.py" = ["T201"] # Allow print in tests
+"tests/**" = ["S", "PL", "T201"]
+
 
 [lint.pyupgrade]
 # Use Python 3.10+ style type hints
