@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pip_search import pip_search
 
 

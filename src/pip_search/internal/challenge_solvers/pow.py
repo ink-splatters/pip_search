@@ -1,6 +1,5 @@
 """Proof-of-Work challenge provider implementation."""
 
-from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -88,7 +87,7 @@ class PoWChallengeProvider:
 
         for tup in product(self._CHARSET, repeat=challenge.suffix_len):
             suffix = "".join(tup)
-            candidate = f"{challenge.base}{suffix}".encode("utf-8", errors="strict")
+            candidate = f"{challenge.base}{suffix}".encode()
             if sha256(candidate).hexdigest() == challenge.target_hash:
                 logger.debug("Fastly: PoW solution: {}", suffix)
                 return suffix

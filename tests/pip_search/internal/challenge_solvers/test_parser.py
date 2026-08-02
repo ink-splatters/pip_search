@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import pytest
 
 from pip_search.internal.challenge_solvers import (

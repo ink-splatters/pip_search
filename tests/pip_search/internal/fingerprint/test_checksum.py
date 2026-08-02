@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 
 from pip_search.internal.fingerprint import checksum

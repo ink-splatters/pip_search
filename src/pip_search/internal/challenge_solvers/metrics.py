@@ -1,6 +1,5 @@
 """Client metrics challenge provider implementation."""
 
-from __future__ import annotations
 
 import json
 

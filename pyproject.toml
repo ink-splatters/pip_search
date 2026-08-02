@@ -5,15 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "pip_search"
 version = "0.2.1"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 license = { file = "LICENSE" }
 readme = "README.md"
 authors = [
     { name = "Victor Garric", email="victor.garric@gmail.com" }
 ]
 classifiers = [
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",

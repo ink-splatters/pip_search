@@ -1,6 +1,5 @@
 """Fingerprint provider implementations used by challenge solvers."""
 
-from __future__ import annotations
 
 from typing import Any
 

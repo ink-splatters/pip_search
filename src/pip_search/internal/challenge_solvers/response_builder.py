@@ -1,6 +1,5 @@
 """Challenge response state machine."""
 
-from __future__ import annotations
 
 from loguru import logger
 

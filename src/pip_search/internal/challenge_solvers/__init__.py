@@ -1,6 +1,5 @@
 """Fastly challenge solver subsystem."""
 
-from __future__ import annotations
 
 from .errors import FastlyChallengeError, FastlyChallengeParseError, FastlyChallengeUnsolvable
 from .fastly import FastlyChallengeSolver

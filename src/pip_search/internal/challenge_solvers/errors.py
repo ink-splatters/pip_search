@@ -1,6 +1,5 @@
 """Fastly challenge solver errors."""
 
-from __future__ import annotations
 
 
 class FastlyChallengeError(RuntimeError):
