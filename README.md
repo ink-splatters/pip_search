@@ -8,7 +8,7 @@ See [Use Policy](./USE_POLICY.md).
 
 ## Installation & Usage
 
-Install with: `uv tool install pip_search`
+Install with: `uv tool install pip_search@git+https://github.com/ink-splatters/pip_search`
 
 Use with `pip_search anything`
 
