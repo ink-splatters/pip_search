@@ -1,6 +1,5 @@
 """Proof-of-Work challenge provider implementation."""
 
-
 from collections.abc import Mapping
 from dataclasses import dataclass
 from hashlib import sha256
@@ -33,7 +32,7 @@ class PoWChallengeProvider:
         """Return PoW challenge response payload."""
         data = challenge.get("data")
         if not isinstance(data, Mapping):
-            raise FastlyChallengeParseError("Missing/invalid PoW data payload")
+            raise FastlyChallengeParseError.pow_data_payload_invalid()
 
         parsed = self.parse(data)
         answer = self.solve_suffix(parsed)
@@ -52,7 +51,7 @@ class PoWChallengeProvider:
         def as_str(key: str) -> str:
             value = data.get(key)
             if not isinstance(value, str) or not value:
-                raise FastlyChallengeParseError(f"Missing/invalid PoW field: {key}")
+                raise FastlyChallengeParseError.pow_field_invalid(key)
             return value
 
         suffix_len = 2
@@ -66,7 +65,7 @@ class PoWChallengeProvider:
                 break
 
         if suffix_len > 4:
-            raise FastlyChallengeUnsolvable(f"PoW suffix length too large: {suffix_len}")
+            raise FastlyChallengeUnsolvable.pow_suffix_too_large(suffix_len)
 
         return PoWChallenge(
             base=as_str("base"),
@@ -92,4 +91,4 @@ class PoWChallengeProvider:
                 logger.debug("Fastly: PoW solution: {}", suffix)
                 return suffix
 
-        raise FastlyChallengeError("PoW solution not found")
+        raise FastlyChallengeError.pow_solution_not_found()

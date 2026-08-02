@@ -1,6 +1,5 @@
 """Challenge response state machine."""
 
-
 from loguru import logger
 
 from .errors import FastlyChallengeUnsolvable
@@ -52,7 +51,7 @@ class ChallengeResponseBuilder:
                     responses.append(self._metrics_provider.solve())
 
                 case ChallengeType.CAPTCHA:
-                    raise FastlyChallengeUnsolvable("CAPTCHA challenge cannot be solved")
+                    raise FastlyChallengeUnsolvable.captcha()
 
                 case _:
                     logger.debug("Fastly: ignoring unknown challenge type: {}", challenge_type)

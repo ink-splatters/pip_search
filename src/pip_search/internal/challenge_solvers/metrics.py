@@ -1,6 +1,5 @@
 """Client metrics challenge provider implementation."""
 
-
 import json
 
 from pip_search.internal.fingerprint.provider import SealedFingerprintProvider

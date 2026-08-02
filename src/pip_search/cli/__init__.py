@@ -1,13 +1,9 @@
 import sys
 import argparse
-import http.client
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
 from urllib.parse import urlencode
 
 from loguru import logger
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 from rich.console import Console
 from rich.table import Table
 
@@ -30,7 +26,6 @@ def _setup_logger(*, log_level: str) -> None:
     logger.remove()
     normalized_level = log_level.upper()
     logger.add(sys.stderr, level=normalized_level)
-    http.client.HTTPConnection.debuglevel = 1 if normalized_level == "TRACE" else 0
 
 
 def cli(argv: Sequence[str] | None = None) -> None:

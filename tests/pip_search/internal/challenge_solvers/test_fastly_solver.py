@@ -15,7 +15,7 @@ def _response(mocker, *, status_code: int = 200, text: str = "", json_data=None)
     response.status_code = status_code
     response.text = text
     if json_data is None:
-        response.json.side_effect = json.JSONDecodeError("invalid", "", 0)
+        response.json = mocker.Mock(side_effect=json.JSONDecodeError("invalid", "", 0))
     else:
         response.json.return_value = json_data
     return response
@@ -32,14 +32,18 @@ def test_ensure_access_returns_true_when_no_challenge(mocker) -> None:
 
 def test_ensure_access_fetches_script_and_solves_chain(mocker) -> None:
     client = mocker.Mock()
-    client.get.side_effect = [
-        _response(mocker, status_code=200, text='<script src="/_fs-ch-abc/script.js"></script>'),
-        _response(
-            mocker,
-            status_code=200,
-            text='init([{"ty":"pat"}], "token-1", "/_fs-ch-abc", true);',
-        ),
-    ]
+    client.get = mocker.Mock(
+        side_effect=[
+            _response(
+                mocker, status_code=200, text='<script src="/_fs-ch-abc/script.js"></script>'
+            ),
+            _response(
+                mocker,
+                status_code=200,
+                text='init([{"ty":"pat"}], "token-1", "/_fs-ch-abc", true);',
+            ),
+        ]
+    )
     client.post.return_value = _response(mocker, status_code=200, json_data={"status": "success"})
 
     solver = FastlyChallengeSolver(client)
@@ -91,14 +95,16 @@ def test_solve_challenge_chain_retries_with_next_round(mocker) -> None:
             assert context.token == "token-2"
             return [{"ty": "pow", "answer": "ab", "base": "b", "hmac": "h", "expires": "e"}]
 
-    client.post.side_effect = [
-        _response(
-            mocker,
-            status_code=200,
-            json_data={"status": "", "ch": [{"ty": "pow", "data": {}}], "tok": "token-2"},
-        ),
-        _response(mocker, status_code=200, json_data={"status": "success"}),
-    ]
+    client.post = mocker.Mock(
+        side_effect=[
+            _response(
+                mocker,
+                status_code=200,
+                json_data={"status": "", "ch": [{"ty": "pow", "data": {}}], "tok": "token-2"},
+            ),
+            _response(mocker, status_code=200, json_data={"status": "success"}),
+        ]
+    )
 
     solver = FastlyChallengeSolver(client, response_builder=StubBuilder())
 

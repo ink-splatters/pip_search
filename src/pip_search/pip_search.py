@@ -2,16 +2,13 @@
 
 import re
 import asyncio
+from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING
 from urllib.parse import quote, urljoin
 
 import httpx
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
 from bs4 import BeautifulSoup
 from loguru import logger
 
@@ -118,35 +115,27 @@ async def _fetch_project_version(
     package_name: str,
 ) -> tuple[str, str]:
     endpoint = f"{base_url.rstrip('/')}/pypi/{quote(package_name, safe='')}/json"
+    version = "Unknown"
 
     try:
         resp = await client.get(endpoint)
     except httpx.HTTPError as exc:
         logger.debug("Failed to fetch version for {}: {}", package_name, exc)
-        return package_name, "Unknown"
+    else:
+        if resp.status_code != 200:
+            logger.debug("Failed to fetch version for {}: HTTP {}", package_name, resp.status_code)
+        else:
+            try:
+                data = resp.json()
+            except ValueError:
+                logger.debug("Version response is not JSON for {}", package_name)
+            else:
+                info = data.get("info") if isinstance(data, dict) else None
+                raw_version = info.get("version") if isinstance(info, dict) else None
+                if isinstance(raw_version, str) and raw_version:
+                    version = raw_version
 
-    if resp.status_code != 200:
-        logger.debug("Failed to fetch version for {}: HTTP {}", package_name, resp.status_code)
-        return package_name, "Unknown"
-
-    try:
-        data = resp.json()
-    except ValueError:
-        logger.debug("Version response is not JSON for {}", package_name)
-        return package_name, "Unknown"
-
-    if not isinstance(data, dict):
-        return package_name, "Unknown"
-
-    info = data.get("info")
-    if not isinstance(info, dict):
-        return package_name, "Unknown"
-
-    version = info.get("version")
-    if isinstance(version, str) and version:
-        return package_name, version
-
-    return package_name, "Unknown"
+    return package_name, version
 
 
 async def _resolve_missing_versions_async(
@@ -162,8 +151,8 @@ async def _resolve_missing_versions_async(
         headers=_DEFAULT_HEADERS,
         timeout=httpx.Timeout(config.timeout_s),
         limits=httpx.Limits(
-            max_connections=max(1, config.max_connections),
-            max_keepalive_connections=max(1, config.max_keepalive_connections),
+            max_connections=max(1, min(config.max_connections, concurrency)),
+            max_keepalive_connections=max(1, min(config.max_keepalive_connections, concurrency)),
             keepalive_expiry=config.keepalive_expiry_s,
         ),
     ) as client:

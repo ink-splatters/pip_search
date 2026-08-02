@@ -1,6 +1,5 @@
 """Fastly challenge solver subsystem."""
 
-
 from .errors import FastlyChallengeError, FastlyChallengeParseError, FastlyChallengeUnsolvable
 from .fastly import FastlyChallengeSolver
 from .metrics import ClientMetricsChallengeProvider

@@ -34,7 +34,7 @@ def default() -> dict[str, Any]:
 
         return fingerprint
 
-    except Exception as e:
+    except (OSError, json.JSONDecodeError, TypeError, ValueError) as e:
         logger.warning("Failed to load fingerprint data: {}", e)
         # Fallback minimal fingerprint
         return {

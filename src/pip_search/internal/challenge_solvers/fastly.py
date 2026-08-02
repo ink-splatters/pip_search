@@ -1,9 +1,9 @@
 """Fastly challenge orchestrator."""
 
-
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+import httpx
 from loguru import logger
 
 from .errors import FastlyChallengeError, FastlyChallengeParseError
@@ -19,9 +19,6 @@ from .types import (
     ChallengeResponse,
     ChallengeRoundHandler,
 )
-
-if TYPE_CHECKING:
-    import httpx
 
 
 class FastlyChallengeSolver:
@@ -51,7 +48,7 @@ class FastlyChallengeSolver:
         probe_body = probe_response.text
 
         if probe_response.status_code != 200:
-            raise FastlyChallengeError(f"Challenge probe failed: HTTP {probe_response.status_code}")
+            raise FastlyChallengeError.challenge_probe_failed(probe_response.status_code)
 
         if not has_challenge(probe_body):
             logger.debug("Fastly: no challenge detected")
@@ -68,9 +65,7 @@ class FastlyChallengeSolver:
             },
         )
         if script_response.status_code != 200:
-            raise FastlyChallengeError(
-                f"Failed to fetch challenge script: HTTP {script_response.status_code}"
-            )
+            raise FastlyChallengeError.challenge_script_fetch_failed(script_response.status_code)
 
         config = parse_challenge_script(script_response.text)
         return self._solve_challenge_chain(config, referer_url=referer_url)
@@ -109,7 +104,7 @@ class FastlyChallengeSolver:
 
             break
 
-        raise FastlyChallengeError("Challenge did not complete successfully")
+        raise FastlyChallengeError.challenge_not_completed()
 
     def _post_back(
         self,
@@ -132,15 +127,15 @@ class FastlyChallengeSolver:
             },
         )
         if response.status_code != 200:
-            raise FastlyChallengeError(f"Post-back failed: HTTP {response.status_code}")
+            raise FastlyChallengeError.post_back_failed(response.status_code)
 
         try:
             data = response.json()
         except ValueError as exc:
-            raise FastlyChallengeParseError(f"Invalid JSON from post-back: {exc}") from exc
+            raise FastlyChallengeParseError.post_back_json_invalid(exc) from exc
 
         if not isinstance(data, Mapping):
-            raise FastlyChallengeParseError("Invalid JSON from post-back: expected object")
+            raise FastlyChallengeParseError.post_back_expected_object()
 
         return dict(data)
 

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any
+from collections.abc import Mapping
+from typing import Any
 
 import pytest
 
@@ -7,9 +8,6 @@ from pip_search.internal.challenge_solvers import (
     ChallengeResponseBuilder,
     FastlyChallengeUnsolvable,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 
 class StubPATProvider:

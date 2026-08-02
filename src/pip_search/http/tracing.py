@@ -3,6 +3,11 @@ from collections.abc import Set as AbstractSet
 from typing import Any
 
 
+class InvalidBodyPreviewLengthError(ValueError):
+    def __init__(self, truncate_len: int):
+        super().__init__(f"truncate_len cannot be < 0: {truncate_len}")
+
+
 class Redactor:
     def __init__(self, sensitive_headers: AbstractSet[str]):
         self._sensitive_headers = sensitive_headers
@@ -18,12 +23,9 @@ class Redactor:
 
 def body_preview(body: Any, truncate_len: int = 4000) -> str:
     if truncate_len < 0:
-        raise ValueError(f"truncate_len cannot be < 0: {truncate_len}")
+        raise InvalidBodyPreviewLengthError(truncate_len)
     if isinstance(body, (bytes, bytearray)):
-        try:
-            text = body.decode("utf-8", errors="replace")
-        except Exception:
-            return f"<{type(body).__name__} {len(body)} bytes>"
+        text = body.decode("utf-8", errors="replace")
     else:
         text = str(body)
     text = text.replace("\r", "\\r").replace("\n", "\\n")

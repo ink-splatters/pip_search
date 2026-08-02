@@ -1,6 +1,5 @@
 """HTTP client utilities."""
 
-
 from typing import Any, Final
 
 import httpx
@@ -78,12 +77,12 @@ class Client(httpx.Client):
     def _safe_preview(request: httpx.Request) -> str:
         try:
             return body_preview(request.content)
-        except Exception:
+        except httpx.RequestNotRead:
             return "<streaming body>"
 
     @staticmethod
     def _safe_response_body(response: httpx.Response) -> bytes:
         try:
             return response.content
-        except Exception:
+        except httpx.ResponseNotRead:
             return b""
