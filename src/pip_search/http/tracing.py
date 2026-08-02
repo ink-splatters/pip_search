@@ -1,6 +1,8 @@
-from collections.abc import Mapping
-from collections.abc import Set as AbstractSet
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Set as AbstractSet
 
 
 class InvalidBodyPreviewLengthError(ValueError):

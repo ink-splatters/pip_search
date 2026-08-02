@@ -2,10 +2,10 @@
 
 import re
 import asyncio
-from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import TYPE_CHECKING
 from urllib.parse import quote, urljoin
 
 import httpx
@@ -14,6 +14,9 @@ from loguru import logger
 
 from . import http
 from .internal.challenge_solvers import FastlyChallengeSolver
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 class SortBy(StrEnum):

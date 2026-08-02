@@ -1,9 +1,8 @@
 """Fastly challenge orchestrator."""
 
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import httpx
 from loguru import logger
 
 from .errors import FastlyChallengeError, FastlyChallengeParseError
@@ -19,6 +18,9 @@ from .types import (
     ChallengeResponse,
     ChallengeRoundHandler,
 )
+
+if TYPE_CHECKING:
+    import httpx
 
 
 class FastlyChallengeSolver:

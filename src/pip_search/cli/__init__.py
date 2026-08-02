@@ -1,6 +1,6 @@
 import sys
 import argparse
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from loguru import logger
@@ -10,6 +10,9 @@ from rich.table import Table
 from .. import __version__
 from ..pip_search import CONFIG, SearchOptions, SortBy, search
 from ..utils import check_version
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 _LOGURU_LEVELS: tuple[str, ...] = (
     "TRACE",

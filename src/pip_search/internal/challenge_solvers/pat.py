@@ -1,11 +1,13 @@
 """PAT challenge provider implementation."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import httpx
 from loguru import logger
 
 from .types import ChallengeContext, ChallengeResponse, ChallengeType
+
+if TYPE_CHECKING:
+    import httpx
 
 
 class PATChallengeProvider:
