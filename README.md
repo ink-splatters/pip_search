@@ -8,9 +8,17 @@ See [Use Policy](./USE_POLICY.md).
 
 ## Installation & Usage
 
-Install with: `uv tool install pip_search@git+https://github.com/ink-splatters/pip_search`
+Install with:
 
-Use with `pip_search anything`
+```sh
+uv tool install 'pip_search @ git+https://github.com/ink-splatters/pip_search`
+```
+
+Use:
+
+```sh
+pip_search <search terms...>
+```
 
 You can specify sorting options :
 
@@ -47,10 +55,6 @@ funcsave pip
 ```
 
 Then run with `pip search`
-
-![https://raw.githubusercontent.com/kkatayama/pip_search/master/screenshot.png](https://raw.githubusercontent.com/kkatayama/pip_search/master/screenshot.png)
-
-Hold the **command** or **ctrl** key to click on the folder icons as a hyperlink.
 
 ## Development
 
