@@ -56,7 +56,7 @@ funcsave pip
 
 Then run with `pip search`
 
-![https://raw.githubusercontent.com/ink-splatters/pip_search/master/screenshot.jpg](https://raw.githubusercontent.com/ink-splatters/pip_search/master/screenshot.jpg)
+![https://raw.githubusercontent.com/ink-splatters/pip_search/dev/screenshot.jpg](https://raw.githubusercontent.com/ink-splatters/pip_search/dev/screenshot.jpg)
 
 ## Development
 
