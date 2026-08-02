@@ -58,11 +58,18 @@ Hold the **command** or **ctrl** key to click on the folder icons as a hyperlink
 uv sync --all-extras 
 ```
 
-Make sure those are always "green":
+Quality checks:
+
+```sh
+uv run poe lint
+uv run poe test
+uv run poe vulture
+```
+
+Auto-fixing some linting issues (`ruff fix`):
 
 ```sh
 uv run poe fix
-uv run poe test
 ```
 
 ## [Changelog](./CHANGELOG.md)
