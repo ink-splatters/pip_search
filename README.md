@@ -11,7 +11,7 @@ See [Use Policy](./USE_POLICY.md).
 Install with:
 
 ```sh
-uv tool install 'pip_search @ git+https://github.com/ink-splatters/pip_search`
+uv tool install 'pip_search @ git+https://github.com/ink-splatters/pip_search'
 ```
 
 Use:
