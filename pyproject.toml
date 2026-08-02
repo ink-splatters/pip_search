@@ -24,29 +24,6 @@ dependencies = [
     "rich>=14.3.2",
 ]
 
-[project.scripts]
-pip_search = "pip_search.cli:pip_search"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/pip_search"]
-
-[tool.poe.tasks]
-vulture = "vulture src tests"
-typecheck = "ty check src tests"
-lint = ["ruff:check", "typecheck"]
-fix = ["ruff:format", "ruff:fix", "typecheck"]
-test = "pytest -v --cov=pip_search --cov-report=term-missing"
-zizmor = "zizmor ."
-
-[tool.poe.tasks."ruff:format"]
-cmd = "ruff format"
-
-[tool.poe.tasks."ruff:check"]
-cmd = "ruff check"
-
-[tool.poe.tasks."ruff:fix"]
-cmd = "ruff check --fix"
-
 [dependency-groups]
 dev = [
     "poethepoet>=0.41.0",
@@ -59,6 +36,30 @@ dev = [
     "vulture>=2.14",
     "zizmor>=1.27.0",
 ]
+
+[project.scripts]
+pip_search = "pip_search.cli:pip_search"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pip_search"]
+
+[tool.poe.tasks]
+vulture = "vulture src tests"
+typecheck = "ty check src tests"
+lint = ["ruff:check", "typecheck", "zizmor"]
+check=["lint"]
+fix = ["ruff:format", "ruff:fix", "typecheck", "zizmor"]
+test = "pytest -v --cov=pip_search --cov-report=term-missing"
+zizmor = "zizmor -p ."
+
+[tool.poe.tasks."ruff:format"]
+cmd = "ruff format"
+
+[tool.poe.tasks."ruff:check"]
+cmd = "ruff check"
+
+[tool.poe.tasks."ruff:fix"]
+cmd = "ruff check --fix"
 
 [tool.poe]
 executor = { type = "uv" }
