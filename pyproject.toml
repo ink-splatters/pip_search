@@ -50,7 +50,7 @@ typecheck = "ty check src tests"
 lint = ["ruff:check", "typecheck", "zizmor"]
 check=["lint"]
 fix = ["ruff:format", "ruff:fix", "typecheck", "zizmor:fix"]
-test = "pytest -v --cov=pip_search --cov-report=term-missing"
+test = "pytest"
 zizmor = "zizmor -p ."
 
 [tool.poe.tasks."zizmor:fix"]
