@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pip_search"
-version = "0.4.4"
+version = "0.4.5"
 requires-python = ">=3.14"
 license = { file = "LICENSE" }
 readme = "README.md"
@@ -49,9 +49,12 @@ vulture = "vulture src tests"
 typecheck = "ty check src tests"
 lint = ["ruff:check", "typecheck", "zizmor"]
 check=["lint"]
-fix = ["ruff:format", "ruff:fix", "typecheck", "zizmor"]
+fix = ["ruff:format", "ruff:fix", "typecheck", "zizmor:fix"]
 test = "pytest -v --cov=pip_search --cov-report=term-missing"
 zizmor = "zizmor -p ."
+
+[tool.poe.tasks."zizmor:fix"]
+cmd = "zizmor -p --fix=all ."
 
 [tool.poe.tasks."ruff:format"]
 cmd = "ruff format"
