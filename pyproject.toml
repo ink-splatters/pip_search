@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pip-search-ng"
+version = "0.5.1"
+requires-python = ">=3.14"
+license = { file = "LICENSE" }
+readme = "README.md"
+authors = [
+    { name = "Victor Garric", email="victor.garric@gmail.com" },
+    { name = "Peter A.", email="ink.splatters@pm.me" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "bs4>=0.0.2",
+    "httpx[brotli,http2,zstd]>=0.27.0",
+    "loguru>=0.7.3",
+    "rich>=14.3.2",
+]
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.41.0",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+    "respx>=0.22.0",
+    "ruff>=0.15.1",
+    "ty>=0.0.17",
+    "vulture>=2.14",
+    "zizmor>=1.27.0",
+]
+
+[project.scripts]
+pip_search = "pip_search.cli:pip_search"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pip_search"]
+
+[tool.poe.tasks]
+vulture = "vulture src tests"
+typecheck = "ty check src tests"
+lint = ["ruff:check", "typecheck", "zizmor"]
+check=["lint"]
+fix = ["ruff:format", "ruff:fix", "typecheck", "zizmor:fix"]
+test = "pytest"
+zizmor = "zizmor -p ."
+
+[tool.poe.tasks."zizmor:fix"]
+cmd = "zizmor -p --fix=all ."
+
+[tool.poe.tasks."ruff:format"]
+cmd = "ruff format"
+
+[tool.poe.tasks."ruff:check"]
+cmd = "ruff check"
+
+[tool.poe.tasks."ruff:fix"]
+cmd = "ruff check --fix"
+
+[tool.poe]
+executor = { type = "uv" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-v",
+    "--cov=pip_search",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=xml",
+]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

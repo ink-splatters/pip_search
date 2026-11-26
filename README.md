@@ -1,17 +1,32 @@
 # pip_search
 
+[__NG edition__](#ng-edition)
+
 __Wrapping the needs of a "pip search" command necessity through PyPi.org__
 
+See [Use Policy](./USE_POLICY.md).
+
 ## Installation & Usage
-Install with `pip install pip_search`
 
-Use with `pip_search anything`
+Install with:
 
-You can specify sorting options : 
+```sh
+uv pip install pip-search-ng
+```
+
+Use:
+
+```sh
+pip_search <search terms...>
+```
+
+You can specify sorting options :
+
 - `pip_search -s name`
 - `pip_search -s released`
 
 To use as the traditional `pip search <keywords>` method, add this alias to your **.zshrc, .bashrc, .bash_profile, etc.**
+
 ```bash
 alias pip='function _pip(){
     if [ $1 = "search" ]; then
@@ -37,54 +52,37 @@ function pip --wraps="pip"
 end
 
 funcsave pip
-````
+```
 
 Then run with `pip search`
 
-![https://raw.githubusercontent.com/kkatayama/pip_search/master/screenshot.png](https://raw.githubusercontent.com/kkatayama/pip_search/master/screenshot.png)
+![https://raw.githubusercontent.com/ink-splatters/pip_search/dev/screenshot.jpg](https://raw.githubusercontent.com/ink-splatters/pip_search/dev/screenshot.jpg)
 
-Hold the **command** or **ctrl** key to click on the folder icons as a hyperlink.
+## Development
 
-## Dependencies
-* bs4
-* rich
-* requests
+```sh
+uv sync --all-extras 
+```
 
-## Updates log
+Quality checks:
 
-- 0.0.14
-    - Passing through CAPTCHA
+```sh
+uv run poe lint
+uv run poe test
+uv run poe vulture
+```
 
-- 0.0.13
-    - Updated for version info
+Auto-fixing some linting issues (`ruff fix`):
 
-- 0.0.12 
-    - Updated to comply with new PyPi.org format
+```sh
+uv run poe fix
+```
 
-- 0.0.11
-    - Added date format options
+## [Changelog](./CHANGELOG.md)
 
-- 0.0.10
-    - Added sorting options
-    - Changes thanks to @dsoares and @genevera 
+## NG Edition
 
-- 0.0.9 
-    - Hotfix for Python 3.8 to 3.10 compatibility
-    - Changes thanks to @jiyeqian
+_NG_ (_New generation_) is about:
+- Making it work in 2026 and beyond (upstream didn't work anymore when the fork was started)
+- Improving UX and/or extending functionality (currently - TODO/undecided)
 
-- 0.0.8 *(deleted for compatibility issues with python 3.8 to 3.10)*
-    - Updated for better compatibility and better display
-    - Changes thanks to @RCristiano
-
-- 0.0.7 
-    - Merge from pip_search_color, colorized output with hyperlink features
-    - Changes thanks to @kkatayama
-
-- 0.0.6  
-    - Parsing with beautiful soup, allowing results with one package to be parsed
-    - Changes thanks to @nsultova
-
-- 0.0.4  
-    - Adding multiple keywords support
-    - Adding usage info
-    - Changes thanks to @Maxz44
